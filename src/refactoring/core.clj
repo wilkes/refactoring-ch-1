@@ -12,12 +12,6 @@
   (Customer. (:name customer)
              (conj (:rentals customer) rental)))
 
-(defn ++ [atm]
-  (swap! atm inc))
-
-(defn add! [atm v]
-  (swap! atm + v))
-
 (defn statement [customer]
   (let [total-amount (atom 0)
         frequent-renter-points (atom 0)
@@ -26,24 +20,24 @@
       (let [amount (atom 0.0)]
         (condp = (-> rental :movie :price-code)
           REGULAR (do
-                    (add! amount 2)
+                    (swap! amount + 2)
                     (when (> (:days-rented rental) 2)
-                      (add! amount (* (- (:days-rented rental) 2) 1.5))))
+                      (swap! amount +  (* (- (:days-rented rental) 2) 1.5))))
           NEW_RELEASE (do
-                        (add! amount (* (:days-rented rental) 3)))
+                        (swap! amount + (* (:days-rented rental) 3)))
           CHILDREN (do
-                     (add! amount 1.5)
+                     (swap! amount + 1.5)
                      (when (> (:days-rented rental) 3)
-                       (add! amount (* (- (:days-rented rental) 3) 1.5)))))
-        (++ frequent-renter-points)
+                       (swap! amount + (* (- (:days-rented rental) 3) 1.5)))))
+        (swap! frequent-renter-points inc)
 
         (when (and (= (-> rental :movie :price-code) NEW_RELEASE)
                    (> (-> rental :days-rented) 1))
-          (++ frequent-renter-points))
+          (swap! frequent-renter-points inc))
 
         (swap! result str
                "\t" (-> rental :movie :title) "\t" @amount "\n")
-        (add! total-amount @amount)))
+        (swap! total-amount + @amount)))
 
     (swap! result str
            "Amount owed is " @total-amount "\n"
