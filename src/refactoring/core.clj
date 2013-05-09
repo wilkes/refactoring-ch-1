@@ -34,11 +34,14 @@
        1
        0)))
 
+(defn sum-with [f coll]
+  (reduce + 0 (map f coll)))
+
 (defn total-amount [{:keys [rentals]}]
-  (reduce + 0 (map rental-price rentals)))
+  (sum-with rental-price rentals))
 
 (defn frequent-renter-points [{:keys [rentals]}]
-  (reduce + 0 (map rental-points rentals)))
+  (sum-with rental-points rentals))
 
 (defn statement [customer]
   (let [result (atom (str "Rental record for " (:name customer) "\n"))]
