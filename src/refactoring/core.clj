@@ -28,12 +28,14 @@
 (defmethod rental-price CHILDREN [rental]
   (+ 1.5 (extra-days 3 (:days-rented rental))))
 
+(defn bonus-point? [rental]
+  (and (= (-> rental :movie :price-code) NEW_RELEASE)
+       (> (-> rental :days-rented) 1)))
+
 (defn rental-points [rental]
-  (+ 1
-     (if (and (= (-> rental :movie :price-code) NEW_RELEASE)
-              (> (-> rental :days-rented) 1))
-       1
-       0)))
+  (+ 1 (if (bonus-point? rental)
+         1
+         0)))
 
 (defn sum-with [f coll]
   (reduce + 0 (map f coll)))
