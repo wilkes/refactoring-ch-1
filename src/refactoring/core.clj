@@ -27,29 +27,27 @@
            (* (- (:days-rented rental) 3) 1.5)
            0)))
 
-(defn rental-points [frequent-renter-points rental]
-  (+ frequent-renter-points
-     1
+(defn rental-points [rental]
+  (+ 1
      (if (and (= (-> rental :movie :price-code) NEW_RELEASE)
               (> (-> rental :days-rented) 1))
        1
        0)))
 
 (defn statement [customer]
-  (let [total-amount (reduce + 0 (map rental-price (:rentals customer)))
-        frequent-renter-points (atom 0)
+  (let [total-amount (reduce + 0
+                             (map rental-price (:rentals customer)))
+        frequent-renter-points (reduce + 0
+                                       (map rental-points (:rentals customer)))
         result (atom (str "Rental record for " (:name customer) "\n"))]
     (doseq [rental (:rentals customer)]
       (let [amount (rental-price rental)]
-
-        (swap! frequent-renter-points rental-points rental)
-
         (swap! result str
                "\t" (-> rental :movie :title) "\t" amount "\n")))
 
     (swap! result str
            "Amount owed is " total-amount "\n"
-           "You earned " @frequent-renter-points " frequent renter points")
+           "You earned " frequent-renter-points " frequent renter points")
     @result))
 
 (def sample (Customer. "First Customer"
