@@ -14,18 +14,19 @@
 
 (defmulti rental-price (fn [rental] (-> rental :movie :price-code)))
 
+(defn extra-days [n days-rented]
+  (if (> days-rented n)
+    (* (- days-rented n) 1.5)
+    0))
+
 (defmethod rental-price REGULAR [rental]
-  (+ 2 (if (> (:days-rented rental) 2)
-         (* (- (:days-rented rental) 2) 1.5)
-         0)))
+  (+ 2 (extra-days 2 (:days-rented rental))))
 
 (defmethod rental-price NEW_RELEASE [rental]
   (* (:days-rented rental) 3))
 
 (defmethod rental-price CHILDREN [rental]
-  (+ 1.5 (if (> (:days-rented rental) 3)
-           (* (- (:days-rented rental) 3) 1.5)
-           0)))
+  (+ 1.5 (extra-days 3 (:days-rented rental))))
 
 (defn rental-points [rental]
   (+ 1
@@ -42,7 +43,7 @@
    :rentals (for [rental rentals]
               {:title (-> rental :movie :title)
                :amount (rental-price rental)})
-   :total-amount   (sum-with rental-price rentals)
+   :total-amount (sum-with rental-price rentals)
    :frequent-renter-points (sum-with rental-points rentals)})
 
 (defn statement [customer]
