@@ -27,6 +27,14 @@
            (* (- (:days-rented rental) 3) 1.5)
            0)))
 
+(defn rental-points [frequent-renter-points rental]
+  (+ frequent-renter-points
+     1
+     (if (and (= (-> rental :movie :price-code) NEW_RELEASE)
+              (> (-> rental :days-rented) 1))
+       1
+       0)))
+
 (defn statement [customer]
   (let [total-amount (atom 0)
         frequent-renter-points (atom 0)
@@ -34,11 +42,7 @@
     (doseq [rental (:rentals customer)]
       (let [amount (rental-price rental)]
 
-        (swap! frequent-renter-points inc)
-
-        (when (and (= (-> rental :movie :price-code) NEW_RELEASE)
-                   (> (-> rental :days-rented) 1))
-          (swap! frequent-renter-points inc))
+        (swap! frequent-renter-points rental-points rental)
 
         (swap! result str
                "\t" (-> rental :movie :title) "\t" amount "\n")
