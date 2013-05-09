@@ -37,26 +37,20 @@
 (defn sum-with [f coll]
   (reduce + 0 (map f coll)))
 
-(defn total-amount [{:keys [rentals]}]
-  (sum-with rental-price rentals))
-
-(defn frequent-renter-points [{:keys [rentals]}]
-  (sum-with rental-points rentals))
-
-(defn statement-data [customer]
-  {:name (:name customer)
-   :rentals (for [rental (:rentals customer)]
+(defn statement-data [{:keys [name rentals]}]
+  {:name name
+   :rentals (for [rental rentals]
               {:title (-> rental :movie :title)
                :amount (rental-price rental)})
-   :total-amount (total-amount customer)
-   :frequent-renter-points (frequent-renter-points customer)})
+   :total-amount   (sum-with rental-price rentals)
+   :frequent-renter-points (sum-with rental-points rentals)})
 
 (defn statement [customer]
   (let [data (statement-data customer)]
     (str "Rental record for " (:name data) "\n"
          (apply str
-                (for [rental (:rentals data)]
-                  (str "\t" (:title rental) "\t" (:amount rental) "\n")))
+                (for [{:keys [title amount]} (:rentals data)]
+                  (str "\t" title "\t" amount "\n")))
          "Amount owed is " (:total-amount data) "\n"
          "You earned " (:frequent-renter-points data) " frequent renter points")))
 
