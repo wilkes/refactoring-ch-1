@@ -36,7 +36,7 @@
        0)))
 
 (defn statement [customer]
-  (let [total-amount (atom 0)
+  (let [total-amount (reduce + 0 (map rental-price (:rentals customer)))
         frequent-renter-points (atom 0)
         result (atom (str "Rental record for " (:name customer) "\n"))]
     (doseq [rental (:rentals customer)]
@@ -45,11 +45,10 @@
         (swap! frequent-renter-points rental-points rental)
 
         (swap! result str
-               "\t" (-> rental :movie :title) "\t" amount "\n")
-        (swap! total-amount + amount)))
+               "\t" (-> rental :movie :title) "\t" amount "\n")))
 
     (swap! result str
-           "Amount owed is " @total-amount "\n"
+           "Amount owed is " total-amount "\n"
            "You earned " @frequent-renter-points " frequent renter points")
     @result))
 
