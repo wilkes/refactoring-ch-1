@@ -43,16 +43,23 @@
 (defn frequent-renter-points [{:keys [rentals]}]
   (sum-with rental-points rentals))
 
-(defn statement [customer]
-  (let [result (atom (str "Rental record for " (:name customer) "\n"))]
-    (doseq [rental (:rentals customer)]
-      (let [amount (rental-price rental)]
-        (swap! result str
-               "\t" (-> rental :movie :title) "\t" amount "\n")))
+(defn statement-data [customer]
+  {:name (:name customer)
+   :rentals (for [rental (:rentals customer)]
+              {:title (-> rental :movie :title)
+               :amount (rental-price rental)})
+   :total-amount (total-amount customer)
+   :frequent-renter-points (frequent-renter-points customer)})
 
+(defn statement [customer]
+  (let [data (statement-data customer)
+        result (atom (str "Rental record for " (:name data) "\n"))]
+    (doseq [rental (:rentals data)]
+      (swap! result str
+             "\t" (:title rental) "\t" (:amount rental) "\n"))
     (swap! result str
-           "Amount owed is " (total-amount customer) "\n"
-           "You earned " (frequent-renter-points customer) " frequent renter points")
+           "Amount owed is " (:total-amount data) "\n"
+           "You earned " (:frequent-renter-points data) " frequent renter points")
     @result))
 
 (def sample (Customer. "First Customer"
